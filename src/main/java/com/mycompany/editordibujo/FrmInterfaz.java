@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,13 +26,15 @@ import javax.swing.JPanel;
  */
 public class FrmInterfaz extends javax.swing.JFrame {
 
+    private ArrayList<Point> coordenadas;
     int x1, y1;
 
     public FrmInterfaz() {
 
-        String nombreArchivo = System.getProperty("user.dir")+ "/src/datos/coords.txt";
+        String nombreArchivo = System.getProperty("user.dir") + "/src/datos/coords.txt";
         initComponents();
 
+        coordenadas = new ArrayList<>();
         x1 = -1;
         y1 = -1;
 
@@ -39,6 +42,57 @@ public class FrmInterfaz extends javax.swing.JFrame {
 
     private void GuardarCoordenadas(String nombreArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(nombreArchivo))) {
+            for (Point coordenada : coordenadas) {
+                bw.write(coordenada.x + ";" + coordenada.y);
+                bw.newLine();
+            }
+            JOptionPane.showMessageDialog(this, "Coordenadas guardadas exitosamente en " + nombreArchivo);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al guardar las coordenadas.");
+        }
+    }
+
+    /*private void GuardarCoordenadas(String nombreArchivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(nombreArchivo))) {
+            Graphics g = pnlLienzo.getGraphics();
+            g.setColor(Color.BLACK);
+
+            int x1 = -1;
+            int y1 = -1;
+
+            // Recorremos los componentes gráficos del panel
+            for (int i = 0; i < pnlLienzo.getComponentCount(); i++) {
+                if (pnlLienzo.getComponent(i) instanceof javax.swing.JPanel) {
+                    javax.swing.JPanel subPanel = (javax.swing.JPanel) pnlLienzo.getComponent(i);
+                    for (int j = 0; j < subPanel.getComponentCount(); j++) {
+                        if (subPanel.getComponent(j) instanceof javax.swing.JLabel) {
+                            javax.swing.JLabel label = (javax.swing.JLabel) subPanel.getComponent(j);
+                            String[] coordinates = label.getText().split("=");
+                            int x2 = Integer.parseInt(coordinates[1]);
+                            int y2 = Integer.parseInt(coordinates[3]);
+
+                            if (x1 > 0 && y1 > 0) {
+                                g.setColor(Color.BLUE);
+                                g.drawLine(x1, y1, x2, y2);
+                            }
+                            x1 = x2;
+                            y1 = y2;
+
+                            bw.write(x2 + ";" + y2);
+                            bw.newLine();
+                        }
+                    }
+                }
+            }
+
+            System.out.println("Coordinates saved to file: " + nombreArchivo);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+ /*try (BufferedWriter bw = new BufferedWriter(new FileWriter(nombreArchivo))) {
             Graphics g = pnlLienzo.getGraphics();
             g.setColor(Color.BLACK);
 
@@ -46,8 +100,8 @@ public class FrmInterfaz extends javax.swing.JFrame {
             int y1 = -1;
 
             
-            String coordinates[] = null;
-            for (int i = 0; i < coordinates.length; i += 2) {
+
+            for (int i = 0; i < pnlLienzo.getComponentCount(); i++) {
                 int x2 = Integer.parseInt(coordinates[i]);
                 int y2 = Integer.parseInt(coordinates[i + 1]);
 
@@ -69,9 +123,9 @@ public class FrmInterfaz extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    /* public void saveDrawing(JPanel pnlLienzo) {
+ /* public void saveDrawing(JPanel pnlLienzo) {
         
         
         Properties prop = System.getProperties();
@@ -97,24 +151,23 @@ public class FrmInterfaz extends javax.swing.JFrame {
         pnlLienzo = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtCoordenadas = new javax.swing.JTextField();
-        jToolBar1 = new javax.swing.JToolBar();
         btnAbrir = new javax.swing.JButton();
         btnGuardar = new javax.swing.JButton();
-        btnLinea = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        seleccionarcombox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
 
         pnlLienzo.setBackground(new java.awt.Color(255, 255, 51));
-        pnlLienzo.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                pnlLienzoMouseMoved(evt);
-            }
-        });
         pnlLienzo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 pnlLienzoMouseClicked(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                pnlLienzoMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                pnlLienzoMouseReleased(evt);
             }
         });
 
@@ -126,12 +179,10 @@ public class FrmInterfaz extends javax.swing.JFrame {
         );
         pnlLienzoLayout.setVerticalGroup(
             pnlLienzoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 222, Short.MAX_VALUE)
+            .addGap(0, 204, Short.MAX_VALUE)
         );
 
         jLabel1.setText("Coordenadas");
-
-        jToolBar1.setRollover(true);
 
         btnAbrir.setText("Abrir");
         btnAbrir.addActionListener(new java.awt.event.ActionListener() {
@@ -139,7 +190,6 @@ public class FrmInterfaz extends javax.swing.JFrame {
                 btnAbrirActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnAbrir);
 
         btnGuardar.setText("Guardar");
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
@@ -147,22 +197,13 @@ public class FrmInterfaz extends javax.swing.JFrame {
                 btnGuardarActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnGuardar);
 
-        btnLinea.setText("Linea");
-        btnLinea.setToolTipText("Línea");
-        btnLinea.addActionListener(new java.awt.event.ActionListener() {
+        seleccionarcombox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Línea", "Rectangulo", "Ovalo" }));
+        seleccionarcombox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLineaActionPerformed(evt);
+                seleccionarcomboxActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnLinea);
-
-        jButton1.setText("jButton1");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(jButton1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -171,25 +212,41 @@ public class FrmInterfaz extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlLienzo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtCoordenadas, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtCoordenadas, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(btnGuardar)
+                                    .addComponent(btnAbrir))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(seleccionarcombox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(30, 119, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(pnlLienzo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtCoordenadas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnAbrir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnGuardar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(seleccionarcombox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(22, 22, 22)
                 .addComponent(pnlLienzo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -198,30 +255,36 @@ public class FrmInterfaz extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void pnlLienzoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pnlLienzoMouseClicked
+        //System.out.println(seleccionarcombox.getSelectedItem().equals("Línea")+" items");
 
-        int x2 = evt.getX();
-        int y2 = evt.getY();
-
-        if (x1 > 0 && y1 > 0) {
-
-            Graphics g = pnlLienzo.getGraphics();
-            g.setColor(Color.BLUE);
-            g.drawLine(x1, y1, x2, y2);
-        }
-        x1 = x2;
-        y1 = y2;
-    }//GEN-LAST:event_pnlLienzoMouseClicked
-
-    private void pnlLienzoMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pnlLienzoMouseMoved
-        int x = evt.getX();
+       /* int x = evt.getX();
         int y = evt.getY();
-
-        txtCoordenadas.setText("x=" + x + "y=" + y);
+        coordenadas.add(new Point(x, y));
 
         Graphics g = pnlLienzo.getGraphics();
-        g.setColor(Color.red);
-        g.drawOval(x, y, x, y);
-    }//GEN-LAST:event_pnlLienzoMouseMoved
+        g.setColor(Color.BLUE);
+
+        if (coordenadas.size() > 1) {
+            Point coordenadaAnterior = coordenadas.get(coordenadas.size() - 2);
+            if (seleccionarcombox.getSelectedItem().equals("Línea")) {
+
+                g.drawLine(coordenadaAnterior.x, coordenadaAnterior.y, x, y);
+            }
+            if (seleccionarcombox.getSelectedItem().equals("Rectangulo")) {
+                int ancho = Math.abs(x - coordenadaAnterior.x);
+            int alto = Math.abs(y - coordenadaAnterior.y);
+            int minX = Math.min(x, coordenadaAnterior.x);
+            int minY = Math.min(y, coordenadaAnterior.y);
+            g.drawRect(minX, minY, ancho, alto);
+            }
+            if (seleccionarcombox.getSelectedItem().equals("Ovalo")) {
+                int radio = 10; // Tamaño del círculo
+                g.drawOval(x - radio, y - radio, radio * 2, radio * 2); // Solo contorno del círculo
+            }
+        }*/
+
+
+    }//GEN-LAST:event_pnlLienzoMouseClicked
 
     private void btnAbrirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirActionPerformed
         String nombreArchivo = Archivo.elegirArchivo();
@@ -268,9 +331,42 @@ public class FrmInterfaz extends javax.swing.JFrame {
          */
     }//GEN-LAST:event_btnGuardarActionPerformed
 
-    private void btnLineaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLineaActionPerformed
+    private void seleccionarcomboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seleccionarcomboxActionPerformed
+
+    }//GEN-LAST:event_seleccionarcomboxActionPerformed
+
+    private void pnlLienzoMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pnlLienzoMousePressed
+    if (evt.getButton() == MouseEvent.BUTTON1) {
+        x1 = evt.getX();
+        y1 = evt.getY();
+       
+    }
+    }//GEN-LAST:event_pnlLienzoMousePressed
+
+    private void pnlLienzoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pnlLienzoMouseReleased
+        // Dibujar la figura cuando se suelta el botón izquierdo del mouse
+    if (evt.getButton() == MouseEvent.BUTTON1) {
+        int x = evt.getX();
+        int y = evt.getY();
+         coordenadas.add(new Point(x, y));
+        // Calcular el tamaño y las coordenadas del rectángulo
+        int ancho = Math.abs(x - coordenadas.get(0).x);
+        int alto = Math.abs(y - coordenadas.get(0).y);
+        int minX = Math.min(x, coordenadas.get(0).x);
+        int minY = Math.min(y,coordenadas.get(0).y);
         
-    }//GEN-LAST:event_btnLineaActionPerformed
+        // Dibujar la figura dependiendo de la opción seleccionada en el combo box
+        Graphics g = pnlLienzo.getGraphics();
+        g.setColor(Color.BLUE);
+        if (seleccionarcombox.getSelectedItem().equals("Rectangulo")) {
+            g.drawRect(minX, minY, ancho, alto);
+        } else if (seleccionarcombox.getSelectedItem().equals("Ovalo")) {
+            g.drawOval(minX, minY, ancho, alto);
+        } else if (seleccionarcombox.getSelectedItem().equals("Línea")) {
+            g.drawLine(coordenadas.get(0).x, coordenadas.get(0).y, x, y);
+        }
+    }
+    }//GEN-LAST:event_pnlLienzoMouseReleased
 
     /**
      * @param args the command line arguments
@@ -310,11 +406,9 @@ public class FrmInterfaz extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAbrir;
     private javax.swing.JButton btnGuardar;
-    private javax.swing.JButton btnLinea;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel pnlLienzo;
+    private javax.swing.JComboBox<String> seleccionarcombox;
     private javax.swing.JTextField txtCoordenadas;
     // End of variables declaration//GEN-END:variables
 }
